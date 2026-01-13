@@ -12,11 +12,95 @@
 
 import argparse
 import sys
+import signal
+import logging
+import os
+import time
 from pathlib import Path
+
+# Включаем отображение прогресса загрузки моделей HuggingFace
+os.environ.setdefault("HF_HUB_ENABLE_HF_TRANSFER", "0")  # Стабильная загрузка
+os.environ.setdefault("TQDM_DISABLE", "0")  # Включить прогресс-бары
+
 import torch
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
+
+
+# Настройка логирования для отображения прогресса загрузки моделей
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+# Увеличиваем детализацию логов для отладки проблем инициализации
+logger = logging.getLogger()
+
+
+def set_verbose_logging():
+    """Включает детальное логирование для отладки."""
+    logger.setLevel(logging.INFO)
+    # Добавляем логирование для важных модулей
+    logging.getLogger('docling').setLevel(logging.INFO)
+    logging.getLogger('huggingface_hub').setLevel(logging.WARNING)  # Уменьшаем шум от HF
+    
+
+set_verbose_logging()
+
+
+def signal_handler(sig, frame):
+    """Обработчик прерывания Ctrl+C."""
+    print("\n\n⚠ Прервано пользователем (Ctrl+C)")
+    print("Если загрузка моделей была прервана, при следующем запуске она продолжится.")
+    sys.exit(130)
+
+
+def download_models():
+    """
+    Предварительно загружает все модели, необходимые для Docling.
+    Вызывается перед конвертацией, чтобы избежать зависания при первом запуске.
+    """
+    from huggingface_hub import snapshot_download
+    
+    # Все модели, используемые Docling (включая те, что загружаются при convert)
+    models_to_download = [
+        # Основные модели Docling
+        "ds4sd/docling-models",
+        "docling-project/docling-models",
+        # Layout модели (используются для распознавания структуры)
+        "docling-project/docling-layout-heron",
+        "ds4sd/docling-ibm-granite-dense-layout-heron",
+        # TableFormer модели (для распознавания таблиц)
+        "ds4sd/docling-tableformer",
+        "docling-project/tableformer",
+        # RT-DETR модели (детекция элементов)
+        "PekingU/rtdetr_r50vd",
+    ]
+    
+    print("⏳ Проверка и загрузка моделей...")
+    print("   (при первом запуске загрузка может занять несколько минут)\n")
+    
+    downloaded = 0
+    for model_id in models_to_download:
+        try:
+            print(f"   📦 {model_id}...", end=" ", flush=True)
+            snapshot_download(
+                repo_id=model_id,
+                local_files_only=False,
+                resume_download=True,
+            )
+            print("✓")
+            downloaded += 1
+        except Exception as e:
+            # Модель может не существовать или быть недоступной
+            error_str = str(e).lower()
+            if "404" in error_str or "not found" in error_str or "doesn't have" in error_str:
+                print("пропущено")
+            else:
+                print(f"⚠ ошибка")
+    
+    print(f"\n✓ Загружено моделей: {downloaded}\n")
 
 
 def setup_device():
@@ -39,7 +123,8 @@ def setup_device():
 
 def convert_pdf_to_markdown(pdf_path: str, output_path: str = None) -> str:
     """
-    Конвертирует PDF файл в Markdown формат.
+    Конвертирует PDF файл в Markdown формат с полным распознаванием.
+    Всегда включены: OCR для текста и распознавание структуры таблиц.
     
     Args:
         pdf_path: Путь к входному PDF файлу
@@ -71,6 +156,12 @@ def convert_pdf_to_markdown(pdf_path: str, output_path: str = None) -> str:
     # Примечание: Docling автоматически использует доступное устройство через PyTorch
     device = setup_device()
     
+    # Регистрируем обработчик Ctrl+C
+    signal.signal(signal.SIGINT, signal_handler)
+    
+    # Предварительно загружаем все модели
+    download_models()
+    
     # Настройка опций для обработки PDF
     # Включаем OCR для поддержки отсканированных документов
     pipeline_options = PdfPipelineOptions()
@@ -85,31 +176,55 @@ def convert_pdf_to_markdown(pdf_path: str, output_path: str = None) -> str:
         }
     )
     
-    print("Начинаем обработку PDF...")
-    print("Это может занять некоторое время в зависимости от размера и сложности документа...\n")
+    print("⏳ Начинаем обработку PDF...")
+    print("   Это может занять некоторое время в зависимости от размера документа...\n")
     
     # Конвертация PDF
     try:
+        conversion_start = time.time()
+        
+        # Добавляем callback для отслеживания прогресса
+        print(f"[{time.strftime('%H:%M:%S')}] Начинаем конвертацию...")
+        
         result = converter.convert(str(pdf_file.absolute()))
         
+        conversion_time = time.time() - conversion_start
+        print(f"[{time.strftime('%H:%M:%S')}] Конвертация завершена")
+        
+        print(f"\n✓ PDF обработан за {conversion_time:.1f} секунд")
+        
         # Экспорт в Markdown
+        print("⏳ Экспорт в Markdown...")
+        export_start = time.time()
         markdown_content = result.document.export_to_markdown()
+        export_time = time.time() - export_start
         
         # Сохранение в файл
         output_path.write_text(markdown_content, encoding='utf-8')
         
-        print(f"✓ Успешно конвертировано!")
-        print(f"✓ Результат сохранён в: {output_path.absolute()}")
+        total_time = time.time() - conversion_start
         
-        # Статистика
+        print(f"\n{'='*60}")
+        print(f"✓ УСПЕШНО ЗАВЕРШЕНО!")
+        print(f"{'='*60}")
+        print(f"Результат сохранён в: {output_path.absolute()}")
         print(f"\nСтатистика:")
         print(f"  - Размер выходного файла: {output_path.stat().st_size / 1024:.2f} КБ")
         print(f"  - Количество символов: {len(markdown_content)}")
+        print(f"  - Время конвертации: {conversion_time:.1f} сек")
+        print(f"  - Время экспорта: {export_time:.1f} сек")
+        print(f"  - Общее время: {total_time:.1f} сек")
+        print(f"{'='*60}\n")
         
         return str(output_path.absolute())
         
+    except KeyboardInterrupt:
+        print(f"\n\n⚠ Обработка прервана пользователем (Ctrl+C)")
+        raise
     except Exception as e:
-        print(f"✗ Ошибка при конвертации: {e}", file=sys.stderr)
+        print(f"\n✗ Ошибка при конвертации: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
         raise
 
 
