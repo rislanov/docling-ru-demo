@@ -67,7 +67,8 @@ def convert_pdf_to_markdown(pdf_path: str, output_path: str = None) -> str:
     print(f"Выходной файл: {output_path.absolute()}")
     print(f"{'='*60}\n")
     
-    # Настройка устройства
+    # Настройка устройства для отображения информации пользователю
+    # Примечание: Docling автоматически использует доступное устройство через PyTorch
     device = setup_device()
     
     # Настройка опций для обработки PDF
@@ -77,6 +78,7 @@ def convert_pdf_to_markdown(pdf_path: str, output_path: str = None) -> str:
     pipeline_options.do_table_structure = True  # Распознавание структуры таблиц
     
     # Создание конвертера с настройками
+    # Конвертер автоматически использует лучшее доступное устройство (MPS/CUDA/CPU)
     converter = DocumentConverter(
         format_options={
             InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)

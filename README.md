@@ -51,7 +51,7 @@ python3 check_deps.py
 
 Конвертация PDF файла в Markdown:
 ```bash
-python pdf_to_md.py document.pdf
+python3 pdf_to_md.py document.pdf
 ```
 
 Результат будет сохранён в `document.md` в той же директории.
@@ -59,25 +59,25 @@ python pdf_to_md.py document.pdf
 ### Указание выходного файла
 
 ```bash
-python pdf_to_md.py document.pdf -o output.md
+python3 pdf_to_md.py document.pdf -o output.md
 ```
 
 ### Полные пути
 
 ```bash
-python pdf_to_md.py /path/to/document.pdf -o /path/to/output.md
+python3 pdf_to_md.py /path/to/document.pdf -o /path/to/output.md
 ```
 
 ### Справка
 
 ```bash
-python pdf_to_md.py --help
+python3 pdf_to_md.py --help
 ```
 
 ## Примеры работы
 
 ```bash
-$ python pdf_to_md.py example.pdf
+$ python3 pdf_to_md.py example.pdf
 ============================================================
 Входной файл: /Users/user/documents/example.pdf
 Выходной файл: /Users/user/documents/example.md
@@ -135,7 +135,7 @@ pip install -r requirements.txt --no-cache-dir
 ```bash
 # Увеличить лимит памяти для Python
 ulimit -s 65536
-python pdf_to_md.py large_document.pdf
+python3 pdf_to_md.py large_document.pdf
 ```
 
 ### OCR не работает с русским языком
