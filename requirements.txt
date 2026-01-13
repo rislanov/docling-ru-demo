@@ -1,0 +1,10 @@
+# Core dependencies for PDF to Markdown conversion using Docling
+docling>=1.0.0
+
+# For better performance on Apple Silicon (M-series chips)
+# PyTorch with MPS (Metal Performance Shaders) support
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Additional dependencies that may be required by Docling
+# (these are typically auto-installed but listed for clarity)
