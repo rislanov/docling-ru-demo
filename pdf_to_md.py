@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Скрипт для тестирования и отладки распознавания PDF файлов на русском языке
-с помощью Docling от IBM.
+Script for testing and debugging PDF file recognition in Russian language
+using Docling from IBM.
 
-Поддерживает:
-- Сложные структуры документов
-- Таблицы, изображения, формулы
-- Apple M-series чипы (GPU через MPS backend)
-- Русский язык (встроенная поддержка OCR)
+Supports:
+- Complex document structures
+- Tables, images, formulas
+- Apple M-series chips (GPU via MPS backend)
+- Russian language (built-in OCR support)
 """
 
 import argparse
@@ -18,9 +18,9 @@ import os
 import time
 from pathlib import Path
 
-# Включаем отображение прогресса загрузки моделей HuggingFace
-os.environ.setdefault("HF_HUB_ENABLE_HF_TRANSFER", "0")  # Стабильная загрузка
-os.environ.setdefault("TQDM_DISABLE", "0")  # Включить прогресс-бары
+# Enable display of HuggingFace model loading progress
+os.environ.setdefault("HF_HUB_ENABLE_HF_TRANSFER", "0")  # Stable download
+os.environ.setdefault("TQDM_DISABLE", "0")  # Enable progress bars
 
 import torch
 from docling.document_converter import DocumentConverter, PdfFormatOption
@@ -28,58 +28,58 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 
 
-# Настройка логирования для отображения прогресса загрузки моделей
+# Configure logging to display model loading progress
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
-# Увеличиваем детализацию логов для отладки проблем инициализации
+# Increase log verbosity for debugging initialization issues
 logger = logging.getLogger()
 
 
 def set_verbose_logging():
-    """Включает детальное логирование для отладки."""
+    """Enables detailed logging for debugging."""
     logger.setLevel(logging.INFO)
-    # Добавляем логирование для важных модулей
+    # Add logging for important modules
     logging.getLogger('docling').setLevel(logging.INFO)
-    logging.getLogger('huggingface_hub').setLevel(logging.WARNING)  # Уменьшаем шум от HF
+    logging.getLogger('huggingface_hub').setLevel(logging.WARNING)  # Reduce noise from HF
     
 
 set_verbose_logging()
 
 
 def signal_handler(sig, frame):
-    """Обработчик прерывания Ctrl+C."""
-    print("\n\n⚠ Прервано пользователем (Ctrl+C)")
-    print("Если загрузка моделей была прервана, при следующем запуске она продолжится.")
+    """Ctrl+C interrupt handler."""
+    print("\n\n⚠ Interrupted by user (Ctrl+C)")
+    print("If model loading was interrupted, it will resume on next run.")
     sys.exit(130)
 
 
 def download_models():
     """
-    Предварительно загружает все модели, необходимые для Docling.
-    Вызывается перед конвертацией, чтобы избежать зависания при первом запуске.
+    Pre-downloads all models required for Docling.
+    Called before conversion to avoid hanging on first run.
     """
     from huggingface_hub import snapshot_download
     
-    # Все модели, используемые Docling (включая те, что загружаются при convert)
+    # All models used by Docling (including those loaded during convert)
     models_to_download = [
-        # Основные модели Docling
+        # Main Docling models
         "ds4sd/docling-models",
         "docling-project/docling-models",
-        # Layout модели (используются для распознавания структуры)
+        # Layout models (used for structure recognition)
         "docling-project/docling-layout-heron",
         "ds4sd/docling-ibm-granite-dense-layout-heron",
-        # TableFormer модели (для распознавания таблиц)
+        # TableFormer models (for table recognition)
         "ds4sd/docling-tableformer",
         "docling-project/tableformer",
-        # RT-DETR модели (детекция элементов)
+        # RT-DETR models (element detection)
         "PekingU/rtdetr_r50vd",
     ]
     
-    print("⏳ Проверка и загрузка моделей...")
-    print("   (при первом запуске загрузка может занять несколько минут)\n")
+    print("⏳ Checking and downloading models...")
+    print("   (on first run, download may take a few minutes)\n")
     
     downloaded = 0
     for model_id in models_to_download:
@@ -93,172 +93,172 @@ def download_models():
             print("✓")
             downloaded += 1
         except Exception as e:
-            # Модель может не существовать или быть недоступной
+            # Model may not exist or be unavailable
             error_str = str(e).lower()
             if "404" in error_str or "not found" in error_str or "doesn't have" in error_str:
-                print("пропущено")
+                print("skipped")
             else:
-                print(f"⚠ ошибка")
+                print(f"⚠ error")
     
-    print(f"\n✓ Загружено моделей: {downloaded}\n")
+    print(f"\n✓ Models downloaded: {downloaded}\n")
 
 
 def setup_device():
     """
-    Настройка устройства для обработки.
-    Автоматически использует GPU на Apple M-series чипах если доступно.
+    Device setup for processing.
+    Automatically uses GPU on Apple M-series chips if available.
     """
     if torch.backends.mps.is_available():
         device = "mps"
-        print(f"✓ Используется Apple Silicon GPU (Metal Performance Shaders)")
+        print(f"✓ Using Apple Silicon GPU (Metal Performance Shaders)")
     elif torch.cuda.is_available():
         device = "cuda"
-        print(f"✓ Используется NVIDIA GPU (CUDA)")
+        print(f"✓ Using NVIDIA GPU (CUDA)")
     else:
         device = "cpu"
-        print(f"✓ Используется CPU")
+        print(f"✓ Using CPU")
     
     return device
 
 
 def convert_pdf_to_markdown(pdf_path: str, output_path: str = None) -> str:
     """
-    Конвертирует PDF файл в Markdown формат с полным распознаванием.
-    Всегда включены: OCR для текста и распознавание структуры таблиц.
+    Converts PDF file to Markdown format with full recognition.
+    Always enabled: OCR for text and table structure recognition.
     
     Args:
-        pdf_path: Путь к входному PDF файлу
-        output_path: Путь к выходному MD файлу (опционально)
+        pdf_path: Path to input PDF file
+        output_path: Path to output MD file (optional)
     
     Returns:
-        Путь к созданному MD файлу
+        Path to created MD file
     """
-    # Проверка существования входного файла
+    # Check input file existence
     pdf_file = Path(pdf_path)
     if not pdf_file.exists():
-        raise FileNotFoundError(f"PDF файл не найден: {pdf_path}")
+        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
     
     if not pdf_file.suffix.lower() == '.pdf':
-        raise ValueError(f"Файл должен иметь расширение .pdf: {pdf_path}")
+        raise ValueError(f"File must have .pdf extension: {pdf_path}")
     
-    # Определение выходного файла
+    # Determine output file
     if output_path is None:
         output_path = pdf_file.with_suffix('.md')
     else:
         output_path = Path(output_path)
     
     print(f"\n{'='*60}")
-    print(f"Входной файл: {pdf_file.absolute()}")
-    print(f"Выходной файл: {output_path.absolute()}")
+    print(f"Input file: {pdf_file.absolute()}")
+    print(f"Output file: {output_path.absolute()}")
     print(f"{'='*60}\n")
     
-    # Настройка устройства для отображения информации пользователю
-    # Примечание: Docling автоматически использует доступное устройство через PyTorch
+    # Device setup for displaying information to the user
+    # Note: Docling automatically uses available device through PyTorch
     device = setup_device()
     
-    # Регистрируем обработчик Ctrl+C
+    # Register Ctrl+C handler
     signal.signal(signal.SIGINT, signal_handler)
     
-    # Предварительно загружаем все модели
+    # Pre-download all models
     download_models()
     
-    # Настройка опций для обработки PDF
-    # Включаем OCR для поддержки отсканированных документов
+    # Configure PDF processing options
+    # Enable OCR for scanned documents support
     pipeline_options = PdfPipelineOptions()
-    pipeline_options.do_ocr = True  # Включить OCR для русского текста
-    pipeline_options.do_table_structure = True  # Распознавание структуры таблиц
+    pipeline_options.do_ocr = True  # Enable OCR for Russian text
+    pipeline_options.do_table_structure = True  # Table structure recognition
     
-    # Создание конвертера с настройками
-    # Конвертер автоматически использует лучшее доступное устройство (MPS/CUDA/CPU)
+    # Create converter with settings
+    # Converter automatically uses best available device (MPS/CUDA/CPU)
     converter = DocumentConverter(
         format_options={
             InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)
         }
     )
     
-    print("⏳ Начинаем обработку PDF...")
-    print("   Это может занять некоторое время в зависимости от размера документа...\n")
+    print("⏳ Starting PDF processing...")
+    print("   This may take some time depending on document size...\n")
     
-    # Конвертация PDF
+    # PDF conversion
     try:
         conversion_start = time.time()
         
-        # Добавляем callback для отслеживания прогресса
-        print(f"[{time.strftime('%H:%M:%S')}] Начинаем конвертацию...")
+        # Add callback for progress tracking
+        print(f"[{time.strftime('%H:%M:%S')}] Starting conversion...")
         
         result = converter.convert(str(pdf_file.absolute()))
         
         conversion_time = time.time() - conversion_start
-        print(f"[{time.strftime('%H:%M:%S')}] Конвертация завершена")
+        print(f"[{time.strftime('%H:%M:%S')}] Conversion completed")
         
-        print(f"\n✓ PDF обработан за {conversion_time:.1f} секунд")
+        print(f"\n✓ PDF processed in {conversion_time:.1f} seconds")
         
-        # Экспорт в Markdown
-        print("⏳ Экспорт в Markdown...")
+        # Export to Markdown
+        print("⏳ Exporting to Markdown...")
         export_start = time.time()
         markdown_content = result.document.export_to_markdown()
         export_time = time.time() - export_start
         
-        # Сохранение в файл
+        # Save to file
         output_path.write_text(markdown_content, encoding='utf-8')
         
         total_time = time.time() - conversion_start
         
         print(f"\n{'='*60}")
-        print(f"✓ УСПЕШНО ЗАВЕРШЕНО!")
+        print(f"✓ COMPLETED SUCCESSFULLY!")
         print(f"{'='*60}")
-        print(f"Результат сохранён в: {output_path.absolute()}")
-        print(f"\nСтатистика:")
-        print(f"  - Размер выходного файла: {output_path.stat().st_size / 1024:.2f} КБ")
-        print(f"  - Количество символов: {len(markdown_content)}")
-        print(f"  - Время конвертации: {conversion_time:.1f} сек")
-        print(f"  - Время экспорта: {export_time:.1f} сек")
-        print(f"  - Общее время: {total_time:.1f} сек")
+        print(f"Result saved to: {output_path.absolute()}")
+        print(f"\nStatistics:")
+        print(f"  - Output file size: {output_path.stat().st_size / 1024:.2f} KB")
+        print(f"  - Character count: {len(markdown_content)}")
+        print(f"  - Conversion time: {conversion_time:.1f} sec")
+        print(f"  - Export time: {export_time:.1f} sec")
+        print(f"  - Total time: {total_time:.1f} sec")
         print(f"{'='*60}\n")
         
         return str(output_path.absolute())
         
     except KeyboardInterrupt:
-        print(f"\n\n⚠ Обработка прервана пользователем (Ctrl+C)")
+        print(f"\n\n⚠ Processing interrupted by user (Ctrl+C)")
         raise
     except Exception as e:
-        print(f"\n✗ Ошибка при конвертации: {e}", file=sys.stderr)
+        print(f"\n✗ Conversion error: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
         raise
 
 
 def main():
-    """Основная функция с парсингом аргументов командной строки."""
+    """Main function with command-line argument parsing."""
     parser = argparse.ArgumentParser(
-        description='Конвертация PDF файлов в Markdown с помощью Docling (IBM)',
+        description='Convert PDF files to Markdown using Docling (IBM)',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Примеры использования:
+Usage examples:
   %(prog)s document.pdf
   %(prog)s document.pdf -o output.md
   %(prog)s /path/to/document.pdf -o /path/to/output.md
 
-Поддерживаемые возможности:
-  - Сложные структуры документов
-  - Таблицы, изображения, формулы
-  - OCR для отсканированных документов
-  - Русский язык
-  - Ускорение на Apple M-series чипах (GPU/NPU)
+Supported features:
+  - Complex document structures
+  - Tables, images, formulas
+  - OCR for scanned documents
+  - Russian language
+  - Acceleration on Apple M-series chips (GPU/NPU)
         """
     )
     
     parser.add_argument(
         'input_pdf',
         type=str,
-        help='Путь к входному PDF файлу'
+        help='Path to input PDF file'
     )
     
     parser.add_argument(
         '-o', '--output',
         type=str,
         default=None,
-        help='Путь к выходному MD файлу (по умолчанию: имя входного файла с расширением .md)'
+        help='Path to output MD file (default: input file name with .md extension)'
     )
     
     parser.add_argument(
@@ -273,7 +273,7 @@ def main():
         convert_pdf_to_markdown(args.input_pdf, args.output)
         return 0
     except Exception as e:
-        print(f"\n✗ Ошибка: {e}", file=sys.stderr)
+        print(f"\n✗ Error: {e}", file=sys.stderr)
         return 1
 
 

@@ -1,49 +1,49 @@
 #!/usr/bin/env python3
 """
-Скрипт для проверки установки зависимостей.
+Script to check dependency installation.
 """
 
 import sys
 
 def check_dependencies():
-    """Проверяет установку всех необходимых зависимостей."""
+    """Checks installation of all required dependencies."""
     dependencies = {
         'torch': 'PyTorch',
         'docling': 'Docling',
     }
     
     all_installed = True
-    print("Проверка зависимостей...\n")
+    print("Checking dependencies...\n")
     
     for module, name in dependencies.items():
         try:
             __import__(module)
-            print(f"✓ {name} установлен")
+            print(f"✓ {name} is installed")
         except ImportError:
-            print(f"✗ {name} не установлен")
+            print(f"✗ {name} is not installed")
             all_installed = False
     
     print()
     
     if all_installed:
-        print("✓ Все зависимости установлены!")
+        print("✓ All dependencies are installed!")
         
-        # Проверка поддержки MPS для Apple Silicon
+        # Check MPS support for Apple Silicon
         try:
             import torch
             if torch.backends.mps.is_available():
-                print("✓ Поддержка Apple Silicon GPU (MPS) доступна")
+                print("✓ Apple Silicon GPU (MPS) support is available")
             elif torch.cuda.is_available():
-                print("✓ Поддержка NVIDIA GPU (CUDA) доступна")
+                print("✓ NVIDIA GPU (CUDA) support is available")
             else:
-                print("✓ Будет использоваться CPU")
+                print("✓ CPU will be used")
         except Exception as e:
-            print(f"Предупреждение: не удалось проверить доступность GPU: {e}")
+            print(f"Warning: unable to check GPU availability: {e}")
         
         return 0
     else:
-        print("✗ Некоторые зависимости не установлены.")
-        print("\nУстановите их с помощью:")
+        print("✗ Some dependencies are not installed.")
+        print("\nInstall them using:")
         print("  pip install -r requirements.txt")
         return 1
 

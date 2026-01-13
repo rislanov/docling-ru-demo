@@ -1,23 +1,23 @@
 # Docling RU Demo
 
-Простой Python скрипт для тестирования и отладки распознавания PDF файлов на русском языке со сложной структурой с помощью [Docling](https://github.com/DS4SD/docling) от IBM.
+Simple Python script for testing and debugging PDF file recognition in Russian language with complex structures using [Docling](https://github.com/DS4SD/docling) from IBM.
 
-## Возможности
+## Features
 
-✓ **Конвертация PDF в Markdown** - высококачественное преобразование документов  
-✓ **Поддержка русского языка** - встроенная поддержка OCR для русского текста  
-✓ **Сложные структуры** - таблицы, изображения, формулы, код  
-✓ **Apple Silicon оптимизация** - автоматическое использование GPU на M1/M2/M3 чипах  
-✓ **OCR для отсканированных документов** - распознавание текста с изображений  
+✓ **PDF to Markdown conversion** - high-quality document transformation  
+✓ **Russian language support** - built-in OCR support for Russian text  
+✓ **Complex structures** - tables, images, formulas, code  
+✓ **Apple Silicon optimization** - automatic GPU usage on M1/M2/M3 chips  
+✓ **OCR for scanned documents** - text recognition from images  
 
-## Требования
+## Requirements
 
-- Python 3.8 или выше
-- macOS 12.3+ (для поддержки Apple Silicon GPU) или Linux/Windows
+- Python 3.8 or higher
+- macOS 12.3+ (for Apple Silicon GPU support) or Linux/Windows
 
-## Установка
+## Installation
 
-### Автоматическая установка (рекомендуется)
+### Automatic installation (recommended)
 
 ```bash
 git clone https://github.com/rislanov/docling-ru-demo.git
@@ -25,169 +25,169 @@ cd docling-ru-demo
 ./install.sh
 ```
 
-### Ручная установка
+### Manual installation
 
-1. Клонируйте репозиторий:
+1. Clone the repository:
 ```bash
 git clone https://github.com/rislanov/docling-ru-demo.git
 cd docling-ru-demo
 ```
 
-2. Установите зависимости:
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Проверьте установку:
+3. Check installation:
 ```bash
 python3 check_deps.py
 ```
 
-**Примечание:** Первый запуск может занять время, так как Docling загрузит необходимые AI модели (~500MB).
+**Note:** First run may take time as Docling will download required AI models (~500MB).
 
-## Использование
+## Usage
 
-### Базовое использование
+### Basic usage
 
-Конвертация PDF файла в Markdown:
+Convert PDF file to Markdown:
 ```bash
 python3 pdf_to_md.py document.pdf
 ```
 
-Результат будет сохранён в `document.md` в той же директории.
+Result will be saved to `document.md` in the same directory.
 
-### Указание выходного файла
+### Specify output file
 
 ```bash
 python3 pdf_to_md.py document.pdf -o output.md
 ```
 
-### Полные пути
+### Full paths
 
 ```bash
 python3 pdf_to_md.py /path/to/document.pdf -o /path/to/output.md
 ```
 
-### Справка
+### Help
 
 ```bash
 python3 pdf_to_md.py --help
 ```
 
-## Примеры работы
+## Usage Examples
 
 ```bash
 $ python3 pdf_to_md.py example.pdf
 ============================================================
-Входной файл: /Users/user/documents/example.pdf
-Выходной файл: /Users/user/documents/example.md
+Input file: /Users/user/documents/example.pdf
+Output file: /Users/user/documents/example.md
 ============================================================
 
-✓ Используется Apple Silicon GPU (Metal Performance Shaders)
-Начинаем обработку PDF...
-Это может занять некоторое время в зависимости от размера и сложности документа...
+✓ Using Apple Silicon GPU (Metal Performance Shaders)
+Starting PDF processing...
+This may take some time depending on document size and complexity...
 
-✓ Успешно конвертировано!
-✓ Результат сохранён в: /Users/user/documents/example.md
+✓ Successfully converted!
+✓ Result saved to: /Users/user/documents/example.md
 
-Статистика:
-  - Размер выходного файла: 15.42 КБ
-  - Количество символов: 15789
+Statistics:
+  - Output file size: 15.42 KB
+  - Character count: 15789
 ```
 
-## Поддержка Apple Silicon (M1/M2/M3)
+## Apple Silicon (M1/M2/M3) Support
 
-Скрипт автоматически определяет доступность Apple Silicon GPU и использует Metal Performance Shaders (MPS) для ускорения обработки. Это обеспечивает:
+The script automatically detects Apple Silicon GPU availability and uses Metal Performance Shaders (MPS) to accelerate processing. This provides:
 
-- Значительное ускорение обработки по сравнению с CPU
-- Эффективное использование единой памяти (unified memory)
-- Поддержка больших документов
+- Significant speedup compared to CPU processing
+- Efficient use of unified memory
+- Support for large documents
 
-Для оптимальной производительности убедитесь, что установлена последняя версия PyTorch с поддержкой MPS.
+For optimal performance, make sure the latest version of PyTorch with MPS support is installed.
 
-## Архитектура
+## Architecture
 
-Скрипт использует следующие компоненты:
+The script uses the following components:
 
-1. **Docling** - основной движок для конвертации документов
-2. **PyTorch** - для AI моделей распознавания структуры
-3. **OCR backend (EasyOCR)** - для распознавания текста на русском языке
-4. **MPS backend** - для ускорения на Apple Silicon
+1. **Docling** - main engine for document conversion
+2. **PyTorch** - for AI models for structure recognition
+3. **OCR backend (EasyOCR)** - for Russian text recognition
+4. **MPS backend** - for acceleration on Apple Silicon
 
-## Устранение неполадок
+## Troubleshooting
 
-### Проблемы с установкой
+### Installation issues
 
-Если возникают проблемы при установке зависимостей:
+If you encounter problems installing dependencies:
 
 ```bash
-# Обновите pip
+# Update pip
 pip install --upgrade pip
 
-# Переустановите зависимости
+# Reinstall dependencies
 pip install -r requirements.txt --no-cache-dir
 ```
 
-### Проблемы с памятью
+### Memory issues
 
-Для очень больших PDF файлов может потребоваться больше памяти. На Apple Silicon можно использовать:
+For very large PDF files, more memory may be required. On Apple Silicon you can use:
 
 ```bash
-# Увеличить лимит памяти для Python
+# Increase memory limit for Python
 ulimit -s 65536
 python3 pdf_to_md.py large_document.pdf
 ```
 
-### OCR не работает с русским языком
+### OCR not working with Russian language
 
-Убедитесь, что установлены все зависимости Docling. При первом запуске библиотека автоматически загрузит необходимые языковые модели.
+Make sure all Docling dependencies are installed. On first run, the library will automatically download required language models.
 
-## Структура проекта
+## Project Structure
 
 ```
 docling-ru-demo/
-├── pdf_to_md.py        # Основной скрипт конвертации
-├── check_deps.py       # Скрипт проверки зависимостей
-├── install.sh          # Скрипт автоматической установки
-├── requirements.txt    # Список зависимостей Python
-├── README.md           # Документация (этот файл)
-└── .gitignore          # Игнорируемые файлы
+├── pdf_to_md.py        # Main conversion script
+├── check_deps.py       # Dependency check script
+├── install.sh          # Automatic installation script
+├── requirements.txt    # Python dependencies list
+├── README.md           # Documentation (this file)
+└── .gitignore          # Ignored files
 ```
 
-## Технические детали
+## Technical Details
 
-### Поддерживаемые форматы входных данных
-- PDF (включая отсканированные документы)
-- Поддержка различных кодировок текста
+### Supported input formats
+- PDF (including scanned documents)
+- Support for various text encodings
 
-### Выходной формат
+### Output format
 - Markdown (.md)
-- Сохранение структуры документа
-- Поддержка таблиц, списков, заголовков
-- Извлечение изображений в виде ссылок
+- Preserves document structure
+- Support for tables, lists, headings
+- Image extraction as links
 
-### Производительность
+### Performance
 
-Время обработки зависит от:
-- Размера документа
-- Сложности структуры
-- Наличия отсканированных страниц (OCR медленнее)
-- Используемого оборудования (CPU vs GPU)
+Processing time depends on:
+- Document size
+- Structure complexity
+- Presence of scanned pages (OCR is slower)
+- Hardware used (CPU vs GPU)
 
-Примерное время для документа на 10 страниц:
-- CPU: 30-60 секунд
-- Apple Silicon GPU (MPS): 10-20 секунд
+Approximate time for a 10-page document:
+- CPU: 30-60 seconds
+- Apple Silicon GPU (MPS): 10-20 seconds
 
-## Лицензия
+## License
 
-Этот проект использует Docling от IBM, который распространяется под лицензией MIT.
+This project uses Docling from IBM, which is distributed under the MIT license.
 
-## Ссылки
+## Links
 
 - [Docling GitHub](https://github.com/DS4SD/docling)
-- [Документация Docling](https://docling-project.github.io/docling/)
+- [Docling Documentation](https://docling-project.github.io/docling/)
 - [PyTorch MPS Support](https://pytorch.org/docs/stable/notes/mps.html)
 
-## Автор
+## Author
 
-Демонстрационный проект для тестирования возможностей Docling с русскоязычными документами.
+Demonstration project for testing Docling capabilities with Russian language documents.
