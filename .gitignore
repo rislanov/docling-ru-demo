@@ -212,3 +212,6 @@ __marimo__/
 output/
 temp/
 test_*.pdf
+
+# Idea
+.idea/
