@@ -211,7 +211,6 @@ __marimo__/
 !README.md
 output/
 temp/
-test_*.pdf
 
 # Idea
 .idea/
