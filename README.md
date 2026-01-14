@@ -25,6 +25,13 @@ cd docling-ru-demo
 ./install.sh
 ```
 
+The installation script will create a virtual environment in the `venv` directory and install all dependencies there.
+
+After installation, activate the virtual environment:
+```bash
+source venv/bin/activate
+```
+
 ### Manual installation
 
 1. Clone the repository:
@@ -33,25 +40,36 @@ git clone https://github.com/rislanov/docling-ru-demo.git
 cd docling-ru-demo
 ```
 
-2. Install dependencies:
+2. Create and activate virtual environment:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Check installation:
+4. Check installation:
 ```bash
-python3 check_deps.py
+python check_deps.py
 ```
 
 **Note:** First run may take time as Docling will download required AI models (~500MB).
 
 ## Usage
 
+**Important:** Make sure to activate the virtual environment before running the scripts:
+```bash
+source venv/bin/activate
+```
+
 ### Basic usage
 
 Convert PDF file to Markdown:
 ```bash
-python3 pdf_to_md.py document.pdf
+python pdf_to_md.py document.pdf
 ```
 
 Result will be saved to `document.md` in the same directory.
@@ -59,25 +77,25 @@ Result will be saved to `document.md` in the same directory.
 ### Specify output file
 
 ```bash
-python3 pdf_to_md.py document.pdf -o output.md
+python pdf_to_md.py document.pdf -o output.md
 ```
 
 ### Full paths
 
 ```bash
-python3 pdf_to_md.py /path/to/document.pdf -o /path/to/output.md
+python pdf_to_md.py /path/to/document.pdf -o /path/to/output.md
 ```
 
 ### Help
 
 ```bash
-python3 pdf_to_md.py --help
+python pdf_to_md.py --help
 ```
 
 ## Usage Examples
 
 ```bash
-$ python3 pdf_to_md.py example.pdf
+$ python pdf_to_md.py example.pdf
 ============================================================
 Input file: /Users/user/documents/example.pdf
 Output file: /Users/user/documents/example.md
@@ -135,7 +153,7 @@ For very large PDF files, more memory may be required. On Apple Silicon you can 
 ```bash
 # Increase memory limit for Python
 ulimit -s 65536
-python3 pdf_to_md.py large_document.pdf
+python pdf_to_md.py large_document.pdf
 ```
 
 ### OCR not working with Russian language
