@@ -30,7 +30,7 @@ echo "   ✓ Virtual environment activated"
 echo ""
 echo "4. Installing dependencies..."
 echo "   (This may take a few minutes)"
-if ! pip install -r requirements.txt; then
+if ! pip3 install -r requirements.txt; then
     echo ""
     echo "✗ Error installing dependencies!"
     echo "Please check the error messages above."
@@ -40,7 +40,7 @@ fi
 
 echo ""
 echo "5. Checking installed dependencies..."
-if python check_deps.py; then
+if python3 check_deps.py; then
     echo ""
     echo "======================================"
     echo "Installation completed successfully!"
@@ -50,10 +50,10 @@ if python check_deps.py; then
     echo "  source venv/bin/activate"
     echo ""
     echo "Then run the script:"
-    echo "  python pdf_to_md.py <your-file>.pdf"
+    echo "  python3 pdf_to_md.py <your-file>.pdf"
     echo ""
     echo "For help:"
-    echo "  python pdf_to_md.py --help"
+    echo "  python3 pdf_to_md.py --help"
     echo ""
     echo "To deactivate the virtual environment when done:"
     echo "  deactivate"
@@ -67,12 +67,12 @@ else
     echo "Some dependencies were not installed correctly."
     echo "Try installing them manually:"
     echo "  source venv/bin/activate"
-    echo "  pip install -r requirements.txt"
+    echo "  pip3 install -r requirements.txt"
     echo ""
-    echo "Or update pip and try again:"
+    echo "Or update pip3 and try again:"
     echo "  source venv/bin/activate"
-    echo "  pip install --upgrade pip"
-    echo "  pip install -r requirements.txt"
+    echo "  pip3 install --upgrade pip"
+    echo "  pip3 install -r requirements.txt"
     echo ""
     deactivate
     exit 1

@@ -48,12 +48,12 @@ source venv/bin/activate
 
 3. Install dependencies:
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 4. Check installation:
 ```bash
-python check_deps.py
+python3 check_deps.py
 ```
 
 **Note:** First run may take time as Docling will download required AI models (~500MB).
@@ -69,7 +69,7 @@ source venv/bin/activate
 
 Convert PDF file to Markdown:
 ```bash
-python pdf_to_md.py document.pdf
+python3 pdf_to_md.py document.pdf
 ```
 
 Result will be saved to `document.md` in the same directory.
@@ -77,25 +77,25 @@ Result will be saved to `document.md` in the same directory.
 ### Specify output file
 
 ```bash
-python pdf_to_md.py document.pdf -o output.md
+python3 pdf_to_md.py document.pdf -o output.md
 ```
 
 ### Full paths
 
 ```bash
-python pdf_to_md.py /path/to/document.pdf -o /path/to/output.md
+python3 pdf_to_md.py /path/to/document.pdf -o /path/to/output.md
 ```
 
 ### Help
 
 ```bash
-python pdf_to_md.py --help
+python3 pdf_to_md.py --help
 ```
 
 ## Usage Examples
 
 ```bash
-$ python pdf_to_md.py example.pdf
+$ python3 pdf_to_md.py example.pdf
 ============================================================
 Input file: /Users/user/documents/example.pdf
 Output file: /Users/user/documents/example.md
@@ -140,10 +140,10 @@ If you encounter problems installing dependencies:
 
 ```bash
 # Update pip
-pip install --upgrade pip
+pip3 install --upgrade pip
 
 # Reinstall dependencies
-pip install -r requirements.txt --no-cache-dir
+pip3 install -r requirements.txt --no-cache-dir
 ```
 
 ### Memory issues
@@ -153,7 +153,7 @@ For very large PDF files, more memory may be required. On Apple Silicon you can 
 ```bash
 # Increase memory limit for Python
 ulimit -s 65536
-python pdf_to_md.py large_document.pdf
+python3 pdf_to_md.py large_document.pdf
 ```
 
 ### OCR not working with Russian language
