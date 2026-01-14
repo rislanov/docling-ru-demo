@@ -11,28 +11,52 @@ echo "1. Checking Python version..."
 python3 --version
 
 echo ""
-echo "2. Installing dependencies..."
+echo "2. Creating virtual environment..."
+if ! python3 -m venv venv; then
+    echo ""
+    echo "✗ Error creating virtual environment!"
+    echo "Please make sure python3-venv is installed."
+    exit 1
+fi
+
+echo "   ✓ Virtual environment created in 'venv' directory"
+
+echo ""
+echo "3. Activating virtual environment..."
+source venv/bin/activate
+
+echo "   ✓ Virtual environment activated"
+
+echo ""
+echo "4. Installing dependencies..."
 echo "   (This may take a few minutes)"
-if ! pip3 install -r requirements.txt; then
+if ! pip3 install --cache-dir venv/pip-cache -r requirements.txt; then
     echo ""
     echo "✗ Error installing dependencies!"
     echo "Please check the error messages above."
+    deactivate
     exit 1
 fi
 
 echo ""
-echo "3. Checking installed dependencies..."
+echo "5. Checking installed dependencies..."
 if python3 check_deps.py; then
     echo ""
     echo "======================================"
     echo "Installation completed successfully!"
     echo "======================================"
     echo ""
-    echo "Now you can use the script:"
+    echo "To use the script, first activate the virtual environment:"
+    echo "  source venv/bin/activate"
+    echo ""
+    echo "Then run the script:"
     echo "  python3 pdf_to_md.py <your-file>.pdf"
     echo ""
     echo "For help:"
     echo "  python3 pdf_to_md.py --help"
+    echo ""
+    echo "To deactivate the virtual environment when done:"
+    echo "  deactivate"
     echo ""
 else
     echo ""
@@ -42,11 +66,14 @@ else
     echo ""
     echo "Some dependencies were not installed correctly."
     echo "Try installing them manually:"
-    echo "  pip3 install -r requirements.txt"
+    echo "  source venv/bin/activate"
+    echo "  pip3 install --cache-dir venv/pip-cache -r requirements.txt"
     echo ""
     echo "Or update pip3 and try again:"
+    echo "  source venv/bin/activate"
     echo "  pip3 install --upgrade pip"
-    echo "  pip3 install -r requirements.txt"
+    echo "  pip3 install --cache-dir venv/pip-cache -r requirements.txt"
     echo ""
+    deactivate
     exit 1
 fi

@@ -25,6 +25,13 @@ cd docling-ru-demo
 ./install.sh
 ```
 
+The installation script will create a virtual environment in the `venv` directory and install all dependencies there.
+
+After installation, activate the virtual environment:
+```bash
+source venv/bin/activate
+```
+
 ### Manual installation
 
 1. Clone the repository:
@@ -33,12 +40,18 @@ git clone https://github.com/rislanov/docling-ru-demo.git
 cd docling-ru-demo
 ```
 
-2. Install dependencies:
+2. Create and activate virtual environment:
 ```bash
-pip install -r requirements.txt
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-3. Check installation:
+3. Install dependencies:
+```bash
+pip3 install --cache-dir venv/pip-cache -r requirements.txt
+```
+
+4. Check installation:
 ```bash
 python3 check_deps.py
 ```
@@ -46,6 +59,11 @@ python3 check_deps.py
 **Note:** First run may take time as Docling will download required AI models (~500MB).
 
 ## Usage
+
+**Important:** Make sure to activate the virtual environment before running the scripts:
+```bash
+source venv/bin/activate
+```
 
 ### Basic usage
 
@@ -122,10 +140,10 @@ If you encounter problems installing dependencies:
 
 ```bash
 # Update pip
-pip install --upgrade pip
+pip3 install --upgrade pip
 
-# Reinstall dependencies
-pip install -r requirements.txt --no-cache-dir
+# Reinstall dependencies (using local cache inside venv)
+pip3 install --cache-dir venv/pip-cache -r requirements.txt
 ```
 
 ### Memory issues
