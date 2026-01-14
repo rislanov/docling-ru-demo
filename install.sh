@@ -30,7 +30,7 @@ echo "   ✓ Virtual environment activated"
 echo ""
 echo "4. Installing dependencies..."
 echo "   (This may take a few minutes)"
-if ! pip3 install -r requirements.txt; then
+if ! pip3 install --cache-dir venv/pip-cache -r requirements.txt; then
     echo ""
     echo "✗ Error installing dependencies!"
     echo "Please check the error messages above."
@@ -67,12 +67,12 @@ else
     echo "Some dependencies were not installed correctly."
     echo "Try installing them manually:"
     echo "  source venv/bin/activate"
-    echo "  pip3 install -r requirements.txt"
+    echo "  pip3 install --cache-dir venv/pip-cache -r requirements.txt"
     echo ""
     echo "Or update pip3 and try again:"
     echo "  source venv/bin/activate"
     echo "  pip3 install --upgrade pip"
-    echo "  pip3 install -r requirements.txt"
+    echo "  pip3 install --cache-dir venv/pip-cache -r requirements.txt"
     echo ""
     deactivate
     exit 1

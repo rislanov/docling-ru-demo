@@ -48,7 +48,7 @@ source venv/bin/activate
 
 3. Install dependencies:
 ```bash
-pip3 install -r requirements.txt
+pip3 install --cache-dir venv/pip-cache -r requirements.txt
 ```
 
 4. Check installation:
@@ -142,8 +142,8 @@ If you encounter problems installing dependencies:
 # Update pip
 pip3 install --upgrade pip
 
-# Reinstall dependencies
-pip3 install -r requirements.txt --no-cache-dir
+# Reinstall dependencies (using local cache inside venv)
+pip3 install --cache-dir venv/pip-cache -r requirements.txt
 ```
 
 ### Memory issues
